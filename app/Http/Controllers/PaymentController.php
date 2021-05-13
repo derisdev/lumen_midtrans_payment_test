@@ -16,14 +16,10 @@ class PaymentController extends Controller
             //dibawah merupakan field baru yang perlu ditambahkan di request buat permintaan
 
             $result = null;
-            $payment_method = $req->payment_method; //accepted value: bank_transfer, credit_card, bank_transfer_manual, bca_klikpay, bca_klikbca, bri_epay, cimb_clicks, danamon_online, qris, gopay, shopeepay
+            $payment_type = $req->payment_type; //accepted value: bank_transfer, credit_card, bank_transfer_manual, bca_klikpay, bca_klikbca, bri_epay, cimb_clicks, danamon_online, qris, gopay, shopeepay
             $bank_name = $req->bank_name; //ini harus nullable, khusus untuk metode transfer bank
             $token_id = $req->token_id; //ini harus nullable, karena khusus untuk metode kartu kredit
-
-            //generated random order id (hanya contoh)
-            // $order_id = 'FS' . date('YmdHis');
-            
-            $order_id = 'orderpertama';
+            $order_id = $req->order_id;
 
 
             $transaction = array(
@@ -54,7 +50,7 @@ class PaymentController extends Controller
                 ),
             );
 
-            switch($payment_method){
+            switch($payment_type){
                 case 'bank_transfer':
                     $result = self::chargeBankTransfer($order_id, $transaction, $bank_name);
                     break;
@@ -130,15 +126,17 @@ class PaymentController extends Controller
                 return ['code' => 0, 'message' => 'Terjadi Kesalahan | Gagal Charge'];
             }
 
-            // $order = new Order();
-            // $order->invoice = $order_id;
-            // $order->transaction_id = $charge->transaction_id;
-            // $order->status = "PENDING";
+            // $detail_histori_transaksi = new DetailHistoriTransaksi();
+            // $detail_histori_transaksi->invoice = $detail_histori_transaksi_id;
+            // $detail_histori_transaksi->transaction_id = $charge->transaction_id;
+            // $detail_histori_transaksi->status = "PENDING";
 
-            //tambahkan redirectUrl di history transaksi
+            //tambahkan redirectUrl, payment_type, order_id di detail history transaksi
             // $historyTransaksi->redirectUrl = $charge->redirect_url;
+            // $historyTransaksi->payment_type = $charge->payment_type;
+            // $historyTransaksi->order_id = $charge->order_id;
 
-            // if(!$order->save())
+            // if(!$detail_histori_transaksi->save())
             // return false;
 
             return ['code' => 1, 'message' => 'Berhasil', 'data' => 'data yang mas return seperti di detail histori', 'result' => $charge];
