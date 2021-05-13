@@ -25,7 +25,7 @@ class PaymentController extends Controller
             $transaction = array(
                 "transaction_details" => [
                     "gross_amount"=> 10000,
-                    "order_id"=> date('Y-m-dHis')
+                    "order_id"=> $order_id
                 ],
                 "customer_details" => [
                     "email" => "deris@Midtrans.com",
@@ -81,7 +81,6 @@ class PaymentController extends Controller
             $transaction['payment_type'] = 'bank_transfer'; 
             $transaction['bank_transfer'] = [
                 "bank" => $bank_name,
-                "va_number" => "111111",
             ];
 
             $charge = MidtransCoreApi::charge($transaction);
@@ -89,12 +88,17 @@ class PaymentController extends Controller
                 return ['code' => 0, 'message' => 'Terjadi Kesalahan dalam charge'];
             }
 
-            // $order = new Order();
-            // $order->invoice = $order_id;
-            // $order->transaction_id = $charge->transaction_id;
-            // $order->status = "PENDING";
 
-            // if(!$order->save())
+            // $detail_histori_transaksi = new DetailHistoriTransaksi();
+            // $detail_histori_transaksi->invoice = $charge->$order_id;
+            // $detail_histori_transaksi->transaction_id = $charge->transaction_id;
+            // $detail_histori_transaksi->status = "PENDING";
+
+            //tambahkan redirectUrl, payment_type, order_id di detail history transaksi
+            // $historyTransaksi->redirectUrl = $charge->redirect_url;
+            // $historyTransaksi->payment_type = $charge->payment_type;
+
+            // if(!$detail_histori_transaksi->save())
             // return false;
 
 
@@ -134,7 +138,6 @@ class PaymentController extends Controller
             //tambahkan redirectUrl, payment_type, order_id di detail history transaksi
             // $historyTransaksi->redirectUrl = $charge->redirect_url;
             // $historyTransaksi->payment_type = $charge->payment_type;
-            // $historyTransaksi->order_id = $charge->order_id;
 
             // if(!$detail_histori_transaksi->save())
             // return false;
