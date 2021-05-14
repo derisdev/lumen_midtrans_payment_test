@@ -15,16 +15,40 @@ class PaymentController extends Controller
 
             //dibawah merupakan field baru yang perlu ditambahkan di request buat permintaan
 
+            $this->validate($req, [
+                'order_id' => 'nullable',
+                'payment_type' => 'nullable',
+                'bank_name' => 'nullable',
+                'token_id' => 'nullable',
+                'store' => 'nullable',
+                'internet_banking_bank' => 'nullable',
+                'klik_bca_user_id' => 'nullable',
+                'e_wallet_type' => 'nullable',
+                'acquirer_type' => 'nullable',
+             ]);
+
             $result = null;
-            $order_id = $req->order_id;
-            $payment_type = $req->payment_type; //accepted value: bank_transfer, credit_card, counter, internet_banking, e_wallet, bank_transfer_manual
-            $bank_name = $req->bank_name; //harus nullable, khusus untuk metode transfer bank
-            $token_id = $req->token_id; //harus nullable, khusus untuk metode kartu kredit
-            $store = $req->store; //harus nullable, khusus untuk metode Over the Counter (indomart, alfamart)
-            $internet_banking_bank = $req->internet_banking_bank; //harus nullable, khusus untuk metode Internet Banking
-            $klik_bca_user_id = $req->klik_bca_user_id; //harus nullable, khusus untuk metode Internet Banking Klik BCA
-            $e_wallet_type = $req->e_wallet_type; //harus nullable, khusus untuk metode E-Wallet
-            $acquirer_type = $req->acquirer_type; //harus nullable, khusus untuk metode E-Wallet tipe qris
+            $order_id = $req->input('order_id');
+            $payment_type = $req->input('payment_type'); //accepted value: bank_transfer, credit_card, counter, internet_banking, e_wallet, bank_transfer_manual
+            $bank_name = $req->input('bank_name'); //harus nullable, khusus untuk metode transfer bank
+            $token_id = $req->input('token_id'); //harus nullable, khusus untuk metode kartu kredit
+            $store = $req->input('store'); //harus nullable, khusus untuk metode Over the Counter (indomart, alfamart)
+            $internet_banking_bank = $req->input('internet_banking_bank'); //harus nullable, khusus untuk metode Internet Banking
+            $klik_bca_user_id = $req->input('klik_bca_user_id'); //harus nullable, khusus untuk metode Internet Banking Klik BCA
+            $e_wallet_type = $req->input('e_wallet_type'); //harus nullable, khusus untuk metode E-Wallet
+            $acquirer_type = $req->input('acquirer_type'); //harus nullable, khusus untuk metode E-Wallet tipe qris
+
+            $this->validate($req, [
+                'order_id' => 'nullable',
+                'payment_type' => 'nullable',
+                'bank_name' => 'nullable',
+                'token_id' => 'nullable',
+                'store' => 'nullable',
+                'internet_banking_bank' => 'nullable',
+                'klik_bca_user_id' => 'nullable',
+                'e_wallet_type' => 'nullable',
+                'acquirer_type' => 'nullable',
+             ]);
             
 
             $transaction = array(
