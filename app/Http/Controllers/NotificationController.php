@@ -15,7 +15,7 @@ class NotificationController extends Controller
             $transaction_id = $notification_body['transaction_id'];
             $status_code = $notification_body['status_code'];
             $transaction_status = $notification_body['transaction_status'];
-            $paymeny_type = $notification_body['payment_type'];
+            $payment_type = $notification_body['payment_type'];
 
             //untuk ambil fcm_id user (hanya contoh)
             // $histori_transaksi = HistoriTransaksi::where('invoice', $invoice)->where('transaction_id', $transaction_id)->first();
@@ -28,7 +28,7 @@ class NotificationController extends Controller
             switch($status_code){
                 case '200':
 
-                    if($paymeny_type=='credit_card'){
+                    if($payment_type=='credit_card'){
                         if($transaction_status=='settlement'){
                         //Notif Sukses
                         // $histori_transaksi->status = "Berhasil";
@@ -46,7 +46,7 @@ class NotificationController extends Controller
                             //fcm id belum dinamis
                             'fHaXx0MrTuiD4jDtVc0A32:APA91bGAyid7yxTjt5ljiz0Yk1aKXVZ742rIVMSSBN99bDQ-7qaLXmG8j1iHHHLUPZTT9t7egDAMY_HqBBKKkD508qbH46izb9pnp0VDYHZsj1vbU7o44fdLLevgyNNZbeE5vrgCqNM7', 
                             'Pembayaran Pending', 
-                            'Selamat! Pembayaran telah terkonfirmasi. Transaksimu sedang diproses.', 
+                            'Pesanan telah terkonfirmasi. Lakukan pembayaran sebelum Selasa, 20:30 WIB..', 
                             '2', $id_histori_transaksi);
                         }
                     }
@@ -58,7 +58,7 @@ class NotificationController extends Controller
                         //fcm id belum dinamis
                         'fHaXx0MrTuiD4jDtVc0A32:APA91bGAyid7yxTjt5ljiz0Yk1aKXVZ742rIVMSSBN99bDQ-7qaLXmG8j1iHHHLUPZTT9t7egDAMY_HqBBKKkD508qbH46izb9pnp0VDYHZsj1vbU7o44fdLLevgyNNZbeE5vrgCqNM7', 
                         'Pembayaran Berhasil', 
-                        'Pesanan telah terkonfirmasi. Lakukan pembayaran sebelum Selasa, 20:30 WIB.', 
+                        'Selamat! Pembayaran telah terkonfirmasi. Transaksimu sedang diproses.', 
                         '2', $id_histori_transaksi);
                     }
 
@@ -77,7 +77,7 @@ class NotificationController extends Controller
                     break;
 
                 case '202' :
-                   if($paymeny_type=='credit_card'){
+                   if($payment_type=='credit_card'){
                         //Notif denied
                     // $histori_transaksi->status = "denied";
                     self::sendPushNotification(

@@ -30,7 +30,7 @@ class PaymentController extends Controller
             $result = null;
             $order_id = $req->input('order_id');
             $payment_type = $req->input('payment_type'); //accepted value: bank_transfer, credit_card, counter, internet_banking, e_wallet, bank_transfer_manual
-            $bank_name = $req->input('bank_name'); //harus nullable, khusus untuk metode transfer bank
+            $bank_name = $req->input('bank_name'); //harus nullable, khusus untuk metode transfer bank accepted value: permata, bca, echannel, bni, bri
             $token_id = $req->input('token_id'); //harus nullable, khusus untuk metode kartu kredit
             $store = $req->input('store'); //harus nullable, khusus untuk metode Over the Counter (indomart, alfamart)
             $internet_banking_bank = $req->input('internet_banking_bank'); //harus nullable, khusus untuk metode Internet Banking
@@ -90,10 +90,10 @@ class PaymentController extends Controller
                     $result = self::chargeOverCounter($order_id,$transaction, $store);
                     break;
                 case 'internet_banking':
-                    $result = self::chargeInternetBanking($order_id,$transaction, $internet_banking_bank, $klik_bca_user_id);
+                    $result = self::chargeInternetBanking($order_id, $transaction, $internet_banking_bank, $klik_bca_user_id);
                     break;
                 case 'e_wallet':
-                    $result = self::chargeEwallet($order_id,$transaction, $e_wallet_type, $acquirer_type);
+                    $result = self::chargeEwallet($order_id, $transaction, $e_wallet_type, $acquirer_type);
             }
 
 
@@ -114,10 +114,23 @@ class PaymentController extends Controller
         try {
             
             $transaction = $transaction_object; 
-            $transaction['payment_type'] = 'bank_transfer'; 
-            $transaction['bank_transfer'] = [
-                "bank" => $bank_name,
-            ];
+            
+
+            if($bank_name=='echannel'){
+                $transaction['payment_type'] = 'echannel'; 
+                $transaction['echannel'] = [
+                    "bill_info1" => "Payment For:",
+                    "bill_info2" => "debt"
+                ];
+            }
+            else {
+                $transaction['payment_type'] = 'bank_transfer'; 
+                $transaction['bank_transfer'] = [
+                    "bank" => $bank_name,
+                ];
+            }
+
+           
 
             $charge = MidtransCoreApi::charge($transaction);
             if(!$charge){
@@ -204,6 +217,7 @@ class PaymentController extends Controller
             return ['code' => 1, 'message' => 'Berhasil', 'data' => 'data yang mas return seperti di detail histori', 'result' => $charge];
 
         } catch (\Exception $e) {
+            dd($e);
             //ini sesuaikan saja sama style masnya
             return ['code' => 0, 'message' => 'Terjadi Kesalahan'];
         }
@@ -252,6 +266,7 @@ class PaymentController extends Controller
             return ['code' => 1, 'message' => 'Success', 'data' => 'data yang mas return seperti di detail histori', 'result' => $charge];
 
         } catch (\Exception $e) {
+            dd($e);
             //ini sesuaikan saja sama style masnya
             return ['code' => 0, 'message' => 'Terjadi Kesalahan'];
         }
@@ -316,6 +331,7 @@ class PaymentController extends Controller
             return ['code' => 1, 'message' => 'Success', 'data' => 'data yang mas return seperti di detail histori', 'result' => $charge];
 
         } catch (\Exception $e) {
+            dd($e);
             //ini sesuaikan saja sama style masnya
             return ['code' => 0, 'message' => 'Terjadi Kesalahan'];
         }
@@ -391,6 +407,7 @@ class PaymentController extends Controller
             return ['code' => 1, 'message' => 'Success', 'data' => 'data yang mas return seperti di detail histori', 'result' => $charge];
 
         } catch (\Exception $e) {
+            dd($e);
             //ini sesuaikan saja sama style masnya
             return ['code' => 0, 'message' => 'Terjadi Kesalahan'];
         }
