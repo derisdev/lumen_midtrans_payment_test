@@ -15,6 +15,7 @@ class NotificationController extends Controller
             $transaction_id = $notification_body['transaction_id'];
             $status_code = $notification_body['status_code'];
             $transaction_status = $notification_body['transaction_status'];
+            $paymeny_type = $notification_body['payment_type'];
 
             //untuk ambil fcm_id user (hanya contoh)
             // $histori_transaksi = HistoriTransaksi::where('invoice', $invoice)->where('transaction_id', $transaction_id)->first();
@@ -26,31 +27,42 @@ class NotificationController extends Controller
 
             switch($status_code){
                 case '200':
-                    
-                    if($transaction_status=='cancel'){
 
-                    //Notif Cancel
-                    // $histori_transaksi->status = "Cancel";
-
-                        self::sendPushNotification(
-                            //fcm id belum dinamis
-                            'fHaXx0MrTuiD4jDtVc0A32:APA91bGAyid7yxTjt5ljiz0Yk1aKXVZ742rIVMSSBN99bDQ-7qaLXmG8j1iHHHLUPZTT9t7egDAMY_HqBBKKkD508qbH46izb9pnp0VDYHZsj1vbU7o44fdLLevgyNNZbeE5vrgCqNM7', 
-                            'Pembayaran Dibatalkan', 
-                            'Pembayaran telah dibatalkan karena melebihi tenggat waktu.', 
-                            '3', $id_histori_transaksi);
-                    }
-                    else {
-
+                    if($paymeny_type=='credit_card'){
+                        if($transaction_status=='settlement'){
                         //Notif Sukses
-                    // $histori_transaksi->status = "Berhasil";
-
+                        // $histori_transaksi->status = "Berhasil";
+                        self::sendPushNotification(
+                        //fcm id belum dinamis
+                        'fHaXx0MrTuiD4jDtVc0A32:APA91bGAyid7yxTjt5ljiz0Yk1aKXVZ742rIVMSSBN99bDQ-7qaLXmG8j1iHHHLUPZTT9t7egDAMY_HqBBKKkD508qbH46izb9pnp0VDYHZsj1vbU7o44fdLLevgyNNZbeE5vrgCqNM7', 
+                        'Pembayaran Berhasil', 
+                        'Selamat! Pembayaran telah terkonfirmasi. Transaksimu sedang diproses.', 
+                        '2', $id_histori_transaksi);
+                        }
+                        else {
+                        //Notif Pending
+                        // $histori_transaksi->status = "Pending";
                         self::sendPushNotification(
                             //fcm id belum dinamis
                             'fHaXx0MrTuiD4jDtVc0A32:APA91bGAyid7yxTjt5ljiz0Yk1aKXVZ742rIVMSSBN99bDQ-7qaLXmG8j1iHHHLUPZTT9t7egDAMY_HqBBKKkD508qbH46izb9pnp0VDYHZsj1vbU7o44fdLLevgyNNZbeE5vrgCqNM7', 
-                            'Pembayaran Berhasil', 
+                            'Pembayaran Pending', 
                             'Selamat! Pembayaran telah terkonfirmasi. Transaksimu sedang diproses.', 
                             '2', $id_histori_transaksi);
+                        }
                     }
+
+                    else {
+                    //Notif Sukses
+                    // $histori_transaksi->status = "Berhasil";
+                    self::sendPushNotification(
+                        //fcm id belum dinamis
+                        'fHaXx0MrTuiD4jDtVc0A32:APA91bGAyid7yxTjt5ljiz0Yk1aKXVZ742rIVMSSBN99bDQ-7qaLXmG8j1iHHHLUPZTT9t7egDAMY_HqBBKKkD508qbH46izb9pnp0VDYHZsj1vbU7o44fdLLevgyNNZbeE5vrgCqNM7', 
+                        'Pembayaran Berhasil', 
+                        'Pesanan telah terkonfirmasi. Lakukan pembayaran sebelum Selasa, 20:30 WIB.', 
+                        '2', $id_histori_transaksi);
+                    }
+
+                      
                     break;
                 case '201':
                     //Notif Pending
@@ -63,15 +75,28 @@ class NotificationController extends Controller
                         '1', $id_histori_transaksi);
 
                     break;
+
                 case '202' :
-                    //Notif denied
+                   if($paymeny_type=='credit_card'){
+                        //Notif denied
                     // $histori_transaksi->status = "denied";
                     self::sendPushNotification(
                         //fcm id belum dinamis
                         'fHaXx0MrTuiD4jDtVc0A32:APA91bGAyid7yxTjt5ljiz0Yk1aKXVZ742rIVMSSBN99bDQ-7qaLXmG8j1iHHHLUPZTT9t7egDAMY_HqBBKKkD508qbH46izb9pnp0VDYHZsj1vbU7o44fdLLevgyNNZbeE5vrgCqNM7', 
                         'Pembayaran Ditolak', 
                         'Pesanan ditolak oleh provider', 
-                        '5',$id_histori_transaksi);
+                        '3',$id_histori_transaksi);
+                   }
+                   else {
+                            //Notif expired
+                    // $histori_transaksi->status = "cancel";
+                    self::sendPushNotification(
+                        //fcm id belum dinamis
+                        'fHaXx0MrTuiD4jDtVc0A32:APA91bGAyid7yxTjt5ljiz0Yk1aKXVZ742rIVMSSBN99bDQ-7qaLXmG8j1iHHHLUPZTT9t7egDAMY_HqBBKKkD508qbH46izb9pnp0VDYHZsj1vbU7o44fdLLevgyNNZbeE5vrgCqNM7', 
+                        'Transaksi Dibatalkan', 
+                        'Transaksi Dibatalkan karena melebihi tenggat waktu', 
+                        '3',$id_histori_transaksi);
+                   }
                     break;
             }
 
