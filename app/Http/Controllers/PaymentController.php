@@ -25,18 +25,20 @@ class PaymentController extends Controller
                 'klik_bca_user_id' => 'nullable',
                 'e_wallet_type' => 'nullable',
                 'acquirer_type' => 'nullable',
+                'cardless_type' => 'nullable',
              ]);
 
             $result = null;
             $order_id = $req->input('order_id');
-            $payment_type = $req->input('payment_type'); //accepted value: bank_transfer, credit_card, counter, internet_banking, e_wallet, bank_transfer_manual
+            $payment_type = $req->input('payment_type'); //accepted value: bank_transfer, credit_card, counter, internet_banking, e_wallet, cardless_credit, bank_transfer_manual
             $bank_name = $req->input('bank_name'); //harus nullable, khusus untuk metode transfer bank accepted value: permata, bca, echannel, bni, bri
             $token_id = $req->input('token_id'); //harus nullable, khusus untuk metode kartu kredit
-            $store = $req->input('store'); //harus nullable, khusus untuk metode Over the Counter (indomart, alfamart)
-            $internet_banking_bank = $req->input('internet_banking_bank'); //harus nullable, khusus untuk metode Internet Banking
-            $klik_bca_user_id = $req->input('klik_bca_user_id'); //harus nullable, khusus untuk metode Internet Banking Klik BCA
-            $e_wallet_type = $req->input('e_wallet_type'); //harus nullable, khusus untuk metode E-Wallet
-            $acquirer_type = $req->input('acquirer_type'); //harus nullable, khusus untuk metode E-Wallet tipe qris
+            $store = $req->input('store'); //harus nullable, khusus untuk metode Over the Counter. accepted value: alfamart, Indomaret
+            $internet_banking_type = $req->input('internet_banking_bank'); //harus nullable, khusus untuk metode Internet Banking. accepted value: bca_klikpay, bca_klikbca, bri_epay, cimb_clicks, danamon_online
+            $klik_bca_user_id = $req->input('klik_bca_user_id'); //harus nullable, khusus untuk metode Internet Banking Klik BCA. 
+            $e_wallet_type = $req->input('e_wallet_type'); //harus nullable, khusus untuk metode E-Wallet. accepted value: qris, gopay, shopeepay
+            $acquirer_type = $req->input('acquirer_type'); //harus nullable, khusus untuk metode E-Wallet tipe qris. accepted value: airpay shopee, gopay
+            $cardless_type = $req->input('cardless_type'); //harus nullable, khusus untuk metode Cardless Credit. accepted value: akulaku
 
             $this->validate($req, [
                 'order_id' => 'nullable',
@@ -90,10 +92,14 @@ class PaymentController extends Controller
                     $result = self::chargeOverCounter($order_id,$transaction, $store);
                     break;
                 case 'internet_banking':
-                    $result = self::chargeInternetBanking($order_id, $transaction, $internet_banking_bank, $klik_bca_user_id);
+                    $result = self::chargeInternetBanking($order_id, $transaction, $internet_banking_type, $klik_bca_user_id);
                     break;
                 case 'e_wallet':
                     $result = self::chargeEwallet($order_id, $transaction, $e_wallet_type, $acquirer_type);
+                    break;
+                case 'cardless_credit':
+                    $result = self::chargeCardlessCredit($order_id, $transaction, $cardless_type);
+                    break;
             }
 
 
@@ -139,13 +145,28 @@ class PaymentController extends Controller
 
 
             // $histori_transaksi = new HistoriTransaksi();
-            // $histori_transaksi->invoice = $charge->$order_id;
+            // $histori_transaksi->order_id = $charge->$order_id;
             // $histori_transaksi->transaction_id = $charge->transaction_id;
             // $histori_transaksi->status = "PENDING";
 
-            //tambahkan payment_type, order_id tenggat waktu, di detail history transaksi
-            // $historyTransaksi->payment_type = $charge->payment_type;
-            // $historyTransaksi->tenggat_waktu = masukkan tenggat waktu;
+            //tambahkan payment_type, va_number, bill_info (khusus mandiri/echannel), bank, tenggat waktu di detail history transaksi
+            // $histori_transaksi->payment_type = $charge->payment_type;
+            
+            if($bank_name=='permata'){
+            // $histori_transaksi->va_number = $charge->permata_va_number;
+            // $histori_transaksi->bank = 'permata';
+            }
+            else if($bank_name=='echannel'){
+            // $histori_transaksi->bill_key = $charge->bill_key;
+            // $histori_transaksi->biller_code = $charge->biller_code;
+            // $histori_transaksi->bank = 'echannel';
+            }
+            // $histori_transaksi->va_number = $charge->va_numbers[0]->va_number;
+            // $histori_transaksi->bank =  $charge->va_numbers[0]->bank;
+            else {
+
+            }
+            // $histori_transaksi->tenggat_waktu = masukkan tenggat waktu;
 
             //waktu expire bisa dicek di link berikut:
             //https://api-docs.midtrans.com/#code-2xx
@@ -164,6 +185,7 @@ class PaymentController extends Controller
             return ['code' => 1, 'message' => 'Success', 'data' => 'data yang mas return seperti di detail histori', 'result' => $charge];
 
         } catch (\Exception $e) {
+            dd($e);
             //ini sesuaikan saja sama style masnya
             return ['code' => 0, 'message' => 'Terjadi Kesalahan'];
         }
@@ -190,16 +212,16 @@ class PaymentController extends Controller
             }
 
             // $histori_transaksi = new HistoriTransaksi();
-            // $histori_transaksi->invoice = $histori_transaksi_id;
+            // $histori_transaksi->order_id = $histori_transaksi_id;
             // $histori_transaksi->transaction_id = $charge->transaction_id;
             // $histori_transaksi->status = "PENDING";
 
-            // perlu redirectURL
+            // perlu redirect_url
 
-            //tambahkan redirectUrl, payment_type, order_id di detail history transaksi
-            // $historyTransaksi->redirectUrl = $charge->redirect_url;
-            // $historyTransaksi->payment_type = $charge->payment_type;
-            // $historyTransaksi->tenggat_waktu = masukkan tenggat waktu;
+            //tambahkan redirect_url, payment_type di detail history transaksi
+            // $histori_transaksi->redirect_url = $charge->redirect_url;
+            // $histori_transaksi->payment_type = $charge->payment_type;
+            // $histori_transaksi->tenggat_waktu = masukkan tenggat waktu;
 
             //waktu expire bisa dicek di link berikut:
             //https://api-docs.midtrans.com/#code-2xx
@@ -241,12 +263,20 @@ class PaymentController extends Controller
 
 
             // $histori_transaksi = new HistoriTransaksi();
-            // $histori_transaksi->invoice = $charge->$order_id;
+            // $histori_transaksi->order_id = $charge->$order_id;
             // $histori_transaksi->transaction_id = $charge->transaction_id;
             // $histori_transaksi->status = "PENDING";
 
-            //tambahkan payment_type, order_id tenggat waktu, di detail history transaksi
+            //tambahkan payment_type, payment_code, store, tenggat waktu, di detail history transaksi
             // $historyTransaksi->payment_type = $charge->payment_type;
+            // $historyTransaksi->payment_code = $charge->payment_code;
+            if($store=='alfamart'){
+                // $historyTransaksi->store = 'alfamart';
+            }
+            else {
+                // $historyTransaksi->store = 'indomaret';
+
+            }
             // $historyTransaksi->tenggat_waktu = masukkan tenggat waktu;
 
             //waktu expire bisa dicek di link berikut:
@@ -273,20 +303,20 @@ class PaymentController extends Controller
 
     }
 
-    static public function chargeInternetBanking($order_id, $transaction_object, $internet_banking_bank, $klikbcaUserID){
+    static public function chargeInternetBanking($order_id, $transaction_object, $internet_banking_type, $klikbcaUserID){
         
         try {
             
             $transaction = $transaction_object; 
-            $transaction['payment_type'] = $internet_banking_bank; 
+            $transaction['payment_type'] = $internet_banking_type; 
 
-            if($internet_banking_bank=='bca_klikpay' || $internet_banking_bank=='cimb_clicks'){
-                $transaction[$internet_banking_bank] = [
+            if($internet_banking_type=='bca_klikpay' || $internet_banking_type=='cimb_clicks'){
+                $transaction[$internet_banking_type] = [
                     "description" => 'Pembelian barang', // required
                 ];
             }
-            else if($internet_banking_bank=='bca_klikbca'){
-                $transaction[$internet_banking_bank] = [
+            else if($internet_banking_type=='bca_klikbca'){
+                $transaction[$internet_banking_type] = [
                     "description" => 'Pembelian barang', // required
                     "user_id" => $klikbcaUserID // required
                 ];
@@ -302,16 +332,16 @@ class PaymentController extends Controller
 
 
             // $histori_transaksi = new HistoriTransaksi();
-            // $histori_transaksi->invoice = $charge->$order_id;
+            // $histori_transaksi->order_id = $charge->$order_id;
             // $histori_transaksi->transaction_id = $charge->transaction_id;
             // $histori_transaksi->status = "PENDING";
 
             
-            // perlu redirectURL
+            // perlu redirect_url
 
-            //tambahkan redirectUrl, payment_type, order_id di detail history transaksi
-            // $historyTransaksi->redirectUrl = $charge->redirect_url;
-            // $historyTransaksi->payment_type = $charge->payment_type;
+            //tambahkan redirect_url, payment_type, tenggat waktu di detail history transaksi
+            // $historyTransaksi->redirect_url = $charge->redirect_url;
+            // $historyTransaksi->payment_type = 'internet_banking';
             // $historyTransaksi->tenggat_waktu = masukkan tenggat waktu;
 
             //waktu expire bisa dicek di link berikut:
@@ -356,7 +386,7 @@ class PaymentController extends Controller
                     "enable_callback" => true, 
 
                     //callback ketika user telah menyelesaikan pembayaran di aplikasi gojek, bisa berupa http atau deeplink, default nya ada dashboard midtrans bagian finish
-                    "callback_url" => "someapps://callback" 
+                    // "callback_url" => "someapps://callback" 
                 ];
 
             }
@@ -364,7 +394,7 @@ class PaymentController extends Controller
             else if($e_wallet_type=='shopeepay'){
                 $transaction[$e_wallet_type] = [
                     //callback ketika user telah menyelesaikan pembayaran di aplikasi gojek, bisa berupa http atau deeplink, default nya ada dashboard midtrans bagian finish
-                    "callback_url" => "someapps://callback" 
+                    // "callback_url" => "someapps://callback" 
                 ];
 
             }
@@ -378,17 +408,75 @@ class PaymentController extends Controller
 
 
             // $histori_transaksi = new HistoriTransaksi();
-            // $histori_transaksi->invoice = $charge->$order_id;
+            // $histori_transaksi->order_id = $charge->$order_id;
             // $histori_transaksi->transaction_id = $charge->transaction_id;
             // $histori_transaksi->status = "PENDING";
 
             
-            // perlu redirectURL
+            // perlu redirect_url
 
-            //tambahkan redirectUrl, payment_type, order_id di detail history transaksi
-            // $historyTransaksi->redirectUrl = $charge->redirect_url;
-            // $historyTransaksi->payment_type = $charge->payment_type;
-            // $historyTransaksi->tenggat_waktu = masukkan tenggat waktu;
+            //tambahkan redirect_url, payment_type, tenggat waktu di detail history transaksi
+            if($e_wallet_type=='gopay'){
+            // $history_transaksi->redirect_url = $charge->actions[1]->url;
+            }
+            else {
+                // $history_transaksi->redirect_url = $charge->actions[0]->url;
+            }   
+                
+            // $history_transaksi->payment_type = 'e_wallet';
+
+            // $history_transaksi->tenggat_waktu = masukkan tenggat waktu;
+
+            //waktu expire bisa dicek di link berikut:
+            //https://api-docs.midtrans.com/#code-2xx
+            
+            //jika ingin custom tenggat waktu tambahkan field berikut, credit card method tidak bisa custom, dan qris & shopeepay max 60 menit
+            // "custom_expiry": {
+            //     "order_time": "2016-12-07 11:54:12 +0700",
+            //     "expiry_duration": 60,
+            //     "unit": "minute"
+            // }
+
+            // if(!$histori_transaksi->save())
+            // return false;
+
+
+            return ['code' => 1, 'message' => 'Success', 'data' => 'data yang mas return seperti di detail histori', 'result' => $charge];
+
+        } catch (\Exception $e) {
+            dd($e);
+            //ini sesuaikan saja sama style masnya
+            return ['code' => 0, 'message' => 'Terjadi Kesalahan'];
+        }
+
+    }
+
+    static public function chargeCardlessCredit($order_id, $transaction_object, $cardless_type){
+        
+        try {
+            
+            $transaction = $transaction_object; 
+            $transaction['payment_type'] = $cardless_type; 
+
+
+            $charge = MidtransCoreApi::charge($transaction);
+            if(!$charge){
+                return ['code' => 0, 'message' => 'Terjadi Kesalahan dalam charge'];
+            }
+
+
+            // $histori_transaksi = new HistoriTransaksi();
+            // $histori_transaksi->order_id = $charge->$order_id;
+            // $histori_transaksi->transaction_id = $charge->transaction_id;
+            // $histori_transaksi->status = "PENDING";
+
+            
+            // perlu redirect_url
+
+            //tambahkan redirect_url, payment_type, tenggat waktu, di detail history transaksi
+            // $history_transaksi->redirect_url = $charge->redirect_url;
+            // $history_transaksi->payment_type = 'cardless_credit';
+            // $history_transaksi->tenggat_waktu = masukkan tenggat waktu;
 
             //waktu expire bisa dicek di link berikut:
             //https://api-docs.midtrans.com/#code-2xx
