@@ -118,13 +118,19 @@ class NotificationController extends Controller
         ];    
      
         $notification = [
-            'title' =>$title,
-            'body' => $message
+            // 'title' =>$title,
+            'body' => $message,
+            "content_available" => true,
+            "click_action"=> "FLUTTER_NOTIFICATION_CLICK",
+            "priority" => "high",
+            "android_channel_id"=> "fengshui"
         ];
 
         $data = [
             "kode_status" => $kode_status,
-            "id_histori_transaksi " => $id_histori_transaksi 
+            "id_histori_transaksi " => $id_histori_transaksi ,
+            "priority" => "high",
+            "content_available" > true
         ];
 
         $extraNotificationData = ["message" => $data,"id" =>$id,'action'=>$action];
