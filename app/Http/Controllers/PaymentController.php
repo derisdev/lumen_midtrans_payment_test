@@ -161,6 +161,7 @@ class PaymentController extends Controller
             // $histori_transaksi->biller_code = $charge->biller_code;
             // $histori_transaksi->bank = 'echannel';
             }
+          
             else {
             // $histori_transaksi->va_number = $charge->va_numbers[0]->va_number;
             // $histori_transaksi->bank =  $charge->va_numbers[0]->bank;
